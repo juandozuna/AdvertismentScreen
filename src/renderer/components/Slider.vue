@@ -1,6 +1,6 @@
 <template>
   <div>
-
+dd
       <b-carousel
         id="carousel"
         :interval="segundos"
@@ -9,8 +9,8 @@
                 img-width="1024"
                 img-height="480"
       >
-        <b-carousel-slide v-for="item in end" :key="item"
-                          :img-src="`https://lorempixel.com/1024/480/technics/${item}/`" 
+        <b-carousel-slide v-for="(item, key) in slides" :key="key"
+                          :img-src="`file://${item}`" 
                           style="height: 100vh"
         >
         </b-carousel-slide>
@@ -21,9 +21,15 @@
 
 
 <script>
-require('jquery')
+
+import ExtensionCheck from './Controllers/extensionCheck'
 const electron = window.require('electron');
 const ipcRenderer = electron.ipcRenderer;
+
+const fileExtension = require('file-extension')
+const extension = new ExtensionCheck();
+const path = require('path')
+const fs = require('fs');
 
 export default {
   name: 'slider',
@@ -34,25 +40,40 @@ export default {
         text: '',
         slide: 0,
         end: 2,
-        instance: []
+        instance: [],
+        slides: [],
       };
   },
   methods:{
     addSlide(){
-      if(this.slide >= this.end)
+      if(this.slide >= this.slides.length-1)
         this.slide = 0;
       else
         this.slide++;
     },
     subtractSlide(){
       if(this.slide <= 0)
-        this.slide = this.end;
+        this.slide = this.slides.length-1;
       else
         this.slide--;
+    },
+    loadElements(){
+      this.slides = new Array();
+        fs.readdir(this.pathToFolder, (err, files) => {
+                files.forEach(file => {
+                let f = file.split(' ').join('%20');
+                if(extension.allowed(fileExtension(f))){
+                let p = path.join(this.pathToFolder, f);
+                if(!this.slides.includes(p))
+                    console.log(p);
+                    this.slides.push(p);
+            }
+        });
+     });
     }
   },
   created(){
-   
+    
   },
   mounted(){
      this.counter = 1;
@@ -69,6 +90,11 @@ export default {
       ipcRenderer.on('change-time', (event, args) => {
         this.segundos = args[0];
       })
+
+      fs.watch(this.pathToFolder,{encoding: 'buffer'}, (eventType, filename) => {
+                this.loadElements();
+                //console.log(eventType);
+        })
 
       ipcRenderer.on('added-slide', (event,args) => {
         this.text = "| Slide Agregado exitosamente | " + args

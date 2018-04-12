@@ -6,6 +6,7 @@
         <div class="inner">
             <small-slide v-for="(t, key) in slides" :key="key" :num="key" :id="key" 
                 :imgUri="t"
+                @activador="Desactivacion(key)"
             ></small-slide>
         </div>
     </div>     
@@ -16,6 +17,7 @@
 <script>
 import SmallSlide from './SmallSlide'
 import ExtensionCheck from './extensionCheck'
+const ipcRenderer = require('electron').ipcRenderer;
 const fs = require('fs');
 const path = require('path');
 const fileExtension = require('file-extension')
@@ -29,6 +31,7 @@ export default {
   data(){
       return {
           pathToFolder: '',
+          inactiveFolder: '',
           slides: [],
       };
   },
@@ -45,6 +48,17 @@ export default {
             }
         });
      });
+    },
+    Desactivacion(key){
+        let imgPth = this.slides[key];
+        let name = path.basename(imgPth);
+        let dest = path.resolve(this.inactiveFolder, name);
+        fs.rename(imgPth, dest, err => {
+            if(err) throw err;
+            else {
+                console.log("Moved Succesfully");
+            }
+        })
     }
   },
   created(){
@@ -52,11 +66,12 @@ export default {
   },
   mounted(){
         this.pathToFolder = window.options.ActiveSlides
+        this.inactiveFolder = window.options.InactiveSlides
         this.loadElements();
 
         fs.watch(this.pathToFolder,{encoding: 'buffer'}, (eventType, filename) => {
                 this.loadElements();
-                console.log(eventType);
+                //console.log(eventType);
         })
   }
 }

@@ -11,7 +11,7 @@
           <div class="slideControls" v-show="buttonActive">
             <div class="row">
                 <div class="col">
-                    <button class="pic-button"><i class="material-icons">check_box</i></button>
+                    <button class="pic-button" @click="activador"><i class="material-icons">check_box</i></button>
                 </div>
                 <div class="col">
                     <button class="pic-button" @click="activarBorrado" v-if="!confirmDelete"><i class="material-icons">delete</i></button>
@@ -59,6 +59,9 @@ export default {
       },
       activarBorrado(){
           this.confirmDelete = true;
+      },
+      activador(){
+          this.$emit('activador', this.num);
       }
   },
   created(){

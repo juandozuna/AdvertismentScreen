@@ -6,6 +6,7 @@
         <div class="inner">
             <small-slide v-for="(t, key) in slides" :key="key" :num="key" :id="key"
                 :imgUri="t"
+                @activador="Activacion(key)"
             ></small-slide>
         </div>
     </div>     
@@ -29,6 +30,7 @@ export default {
   data(){
       return {
         pathToFolder: '',
+        activeFolder: '',
         slides: []
       };
   },
@@ -45,15 +47,27 @@ export default {
             }
         });
      });
+    },
+     Activacion(key){
+        let imgPth = this.slides[key];
+        let name = path.basename(imgPth);
+        let dest = path.resolve(this.activeFolder, name);
+        fs.rename(imgPth, dest, err => {
+            if(err) throw err;
+            else {
+                console.log("Moved Succesfully");
+            }
+        })
     }
   },
   mounted(){
     this.pathToFolder = window.options.InactiveSlides
+    this.activeFolder = window.options.ActiveSlides
     this.loadElements();
 
     fs.watch(this.pathToFolder,{encoding: 'buffer'}, (eventType, filename) => {
         this.loadElements();
-        console.log(eventType);
+        //console.log(eventType);
     })
       
   }

@@ -85,7 +85,7 @@ function createWindow () {
   if(goFullScreen){
     secondWindow.setFullScreen(true);
   }
-  //secondWindow.loadURL(winURL+"slider")
+  secondWindow.loadURL(winURL+"slider")
 
 
 }
